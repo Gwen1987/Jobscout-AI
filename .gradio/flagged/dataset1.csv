@@ -1,0 +1,8 @@
+Job Title,Job Description,output,timestamp
+Remote Data Entry Clerk,No experience needed. Get paid fast. Work from home.,,2025-06-18 22:21:59.918685
+Data Analyst,"Make $1,000 per day! Instant payment","❌ Error: Exception encountered when calling Embedding.call().
+
+[1m{{function_node __wrapped__Cast_device_/job:localhost/replica:0/task:0/device:CPU:0}} Cast string to int32 is not supported [Op:Cast] name: [0m
+
+Arguments received by Embedding.call():
+  • inputs=tf.Tensor(shape=(1,), dtype=string)",2025-06-19 20:12:29.874158
