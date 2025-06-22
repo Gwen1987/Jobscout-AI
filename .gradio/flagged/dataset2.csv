@@ -1,0 +1,22 @@
+Paste a job posting,Fraud Risk Assessment,timestamp
+"Job Title: Software Engineer
+
+We’re hiring a full-time Software Engineer to join our Toronto-based backend team at CloudCore Inc. We value thoughtful design and high-impact code.
+
+Requirements:
+- 3+ years experience in Python or Go
+- Strong SQL and RESTful API skills
+- Comfortable working remotely
+
+Salary range: $85,000–$100,000 annually + benefits.
+
+Apply through our company site: www.cloudcore.io/careers
+","❌ Error: Exception encountered when calling Sequential.call().
+
+[1mInvalid input shape for input Tensor(""Cast:0"", shape=(1, 10000), dtype=string). Expected shape (1,), but input has incompatible shape (1, 10000)[0m
+
+Arguments received by Sequential.call():
+  • inputs=tf.Tensor(shape=(1, 10000), dtype=string)
+  • training=False
+  • mask=None
+  • kwargs=<class 'inspect._empty'>",2025-06-21 23:29:12.580162

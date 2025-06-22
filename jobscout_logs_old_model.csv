@@ -1,0 +1,5 @@
+timestamp,probability,label,preview
+2025-06-21T23:32:10.408214,0.0004,✅ Low Risk — Appears Legitimate,Job Title: Software Engineer  We’re hiring a full-time Software Engineer to join our Toronto-based backend team at Cloud
+2025-06-21T23:32:26.516271,0.9999,🚩 High Fraud Risk,"Job Title: Data Entry Clerk – $1000/Day  Work from home with ZERO experience needed. Earn up to $1,000 per day typing fr"
+2025-06-21T23:32:41.249755,0.0026,✅ Low Risk — Appears Legitimate,"Job Title: Online Survey Agent  We are looking for people to complete simple surveys from home. Must be 18+, have intern"
+2025-06-21T23:32:57.471590,0.0,✅ Low Risk — Appears Legitimate,"Job Title: Customer Support Specialist  About Us: At Maple Co-op, we provide sustainable solutions for home goods. We're"

@@ -1,80 +1,64 @@
-import sys
-import os
-import contextlib
-import unicodedata
 import pandas as pd
 import tensorflow as tf
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.callbacks import EarlyStopping
+from sklearn.model_selection import train_test_split
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.utils.class_weight import compute_class_weight
 import numpy as np
-from sklearn.utils import class_weight
+import pickle
 
-# --- Force UTF-8 encoding behavior ---
-os.environ["PYTHONIOENCODING"] = "utf-8"
-sys.stdout.reconfigure(encoding='utf-8')
+# === CONFIGURATION ===
+USE_CLASS_WEIGHT = True
+MODEL_OUTPUT = "models/jobscout_pipeline_v1.keras"
+VECTORIZER_OUTPUT = "models/jobscout_vectorizer.pkl"
 
-# === Load and preprocess data ===
-with open("data/preprocessed_train_data.csv", "r", encoding="utf-8", errors="replace") as f:
-    df = pd.read_csv(f)
-X = df["text"].fillna("").values
-y = df["fraudulent"].values
+# === LOAD DATA ===
+df = pd.read_csv("data/preprocessed_train_data_v3.csv")
+X_text_raw = df["text"]
+y = df["fraudulent"]
 
-# === Create and adapt the TextVectorization layer ===
-vectorizer = tf.keras.layers.TextVectorization(
-    max_tokens=10000,
-    output_sequence_length=300
+# === TEXT VECTORIZATION ===
+vectorizer = TfidfVectorizer(max_features=10000, stop_words="english")
+X_text = vectorizer.fit_transform(X_text_raw)
+
+# === SPLIT ===
+X_train, X_val, y_train, y_val = train_test_split(
+    X_text, y, test_size=0.2, random_state=42, stratify=y
 )
-vectorizer.adapt(X)
 
-# === Clean and deduplicate vectorizer vocabulary to prevent Unicode save crash ===
-vocab = vectorizer.get_vocabulary()
-cleaned_vocab = [
-    unicodedata.normalize("NFKD", word).encode("ascii", "ignore").decode("ascii")
-    for word in vocab
-]
+# === CLASS WEIGHTING ===
+class_weight = None
+if USE_CLASS_WEIGHT:
+    weights = compute_class_weight(class_weight='balanced', classes=np.unique(y_train), y=y_train)
+    class_weight = dict(enumerate(weights))
 
-# Deduplicate while preserving order
-seen = set()
-unique_cleaned_vocab = []
-for word in cleaned_vocab:
-    if word not in seen:
-        seen.add(word)
-        unique_cleaned_vocab.append(word)
-
-vectorizer.set_vocabulary(unique_cleaned_vocab)
-
-# === Compute class weights ===
-weights = class_weight.compute_class_weight('balanced', classes=np.unique(y), y=y)
-class_weights = {int(i): float(w) for i, w in enumerate(weights)}
-
-# === Build the model ===
-model = tf.keras.Sequential([
-    tf.keras.layers.Embedding(input_dim=10000, output_dim=128, input_length=300),
-    tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(64)),
-    tf.keras.layers.Dropout(0.3),
-    tf.keras.layers.Dense(64, activation='relu'),
-    tf.keras.layers.Dense(1, activation='sigmoid')
+# === MODEL ===
+model = Sequential([
+    Dense(128, activation='relu', input_shape=(X_train.shape[1],)),
+    Dense(64, activation='relu'),
+    Dense(1, activation='sigmoid')
 ])
+model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-model.compile(
-    loss='binary_crossentropy',
-    optimizer='adam',
-    metrics=['accuracy', tf.keras.metrics.Precision(name='precision'), tf.keras.metrics.Recall(name='recall')]
+# === TRAIN ===
+early_stop = EarlyStopping(monitor='val_loss', patience=3, restore_best_weights=True)
+model.fit(
+    X_train.toarray(), y_train,
+    validation_data=(X_val.toarray(), y_val),
+    epochs=10,
+    batch_size=32,
+    class_weight=class_weight,
+    callbacks=[early_stop]
 )
 
-# === Vectorize input for training ===
-X_vec = vectorizer(X).numpy()
+# === SAVE ARTIFACTS ===
+model.save(MODEL_OUTPUT)
 
-# === Train the model ===
-model.fit(X_vec, y, epochs=5, class_weight=class_weights)
+with open(VECTORIZER_OUTPUT, "wb") as f:
+    pickle.dump(vectorizer, f)
 
-# === Combine vectorizer and model into full pipeline ===
-pipeline = tf.keras.Sequential([vectorizer, model])
-
-# === Call the pipeline once to build it ===
-_ = pipeline(tf.constant(["trigger shape build"]))
-
-# === Safe save: redirect stdout + stderr to avoid Unicode crashes ===
-def safe_save_pipeline(model, filename="jobscout_pipeline.keras"):
-    with open(os.devnull, 'w') as devnull, contextlib.redirect_stdout(devnull), contextlib.redirect_stderr(devnull):
-        model.save(filename)
-
-safe_save_pipeline(pipeline)
+print("✅ Training complete. Artifacts saved:")
+print("   -", MODEL_OUTPUT)
+print("   -", VECTORIZER_OUTPUT)
