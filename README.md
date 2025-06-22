@@ -3,18 +3,59 @@
 JobScout AI is a neural network-based binary classification project built to detect fraudulent job postings. Using natural language processing (NLP) and TensorFlow, it analyzes job descriptions and titles to predict the likelihood of fraud, aiming to support job seekers by filtering out deceptive listings.
 
 ---
+## 🌐 Live Demo on Hugging Face
+
+Want to test JobScout AI instantly? Try it now on [Hugging Face Spaces](https://huggingface.co/spaces/gwen-s/jobscout-ai)!
+
+[![HuggingFace](https://img.shields.io/badge/Hosted%20on-HuggingFace-orange?logo=HuggingFace)](https://huggingface.co/spaces/gwen-s/jobscout-ai)
+
+**Usage:**
+
+1. Paste a full job posting (title + description) into the textbox.
+2. Receive a real-time fraud risk assessment.
+3. All submissions are logged internally for future model improvements.
+
+⚠️ *This version uses only the job text and flags jobs with a fraud probability ≥ 83%.*
+
+---
+
 
 ## 📦 Project Structure
 
 ```
 JobScout-AI/
-├── data/                        # CSV dataset of real vs fake job posts
-├── src/                         # Training + preprocessing scripts
-├── notebooks/                   # Optional EDA and training logs
-├── images/                      # Visualizations and plots
-├── logs/                        # Training logs + metrics
+├── .gitignore                    # Ignored files for version control
+├── EDA.ipynb                     # Exploratory Data Analysis notebook
+├── gradio_app.py                # Main Gradio app entry point
+├── LICENSE                      # Project license
 ├── README.md                    # Project overview and usage
-└── requirements.txt             # Project dependencies
+├── requirements.txt             # Core project dependencies
+├── data/                        # Processed and raw datasets - files excluded from github due to size
+├── images/                      # Visualizations and plots
+   ├── confusion_matrix.png
+   ├── precision_recall_comparison.png
+   ├── precision_recall_curve.png
+   ├── threshold_optimization.png
+
+├── logs/                        # Evaluation logs and final reports
+    ├── classification_report.txt
+    ├──  eval_summary.md
+    ├──  jobscout_logs_final.csv
+├── models/                      # Model + vectorizer artifacts
+   ├── archived/                # Archived models
+   ├──  jobscout_model_v1.keras
+   ├──jobscout_pipeline_v1.keras
+├── notebook/                    # Metric visualizations (Jupyter)
+   ├──precision_recall_graph.ipynb
+├── real_world_examples/         # Real job ads for evaluation
+├── scripts/                     # Training and evaluation scripts
+   ├── analyze_threshold.py
+   ├── classification_report.py
+   ├── generate_eval_results.py
+   ├── merge_training_data.py
+   ├── split_train_validation.py
+   ├── train_data_.py
+
 ```
 
 ---
@@ -71,10 +112,10 @@ Dataset: `fake_job_postings.csv` from Kaggle [fake-job-posting-prediction](https
    ```bash
    pip install -r requirements.txt
    ```
-3. Navigate to `src/` and run:
+3. Launch the Gradio app locally:
 
    ```bash
-   python train_data.py
+   python gradio_app.py
    ```
 
 ---
@@ -84,7 +125,6 @@ Dataset: `fake_job_postings.csv` from Kaggle [fake-job-posting-prediction](https
 * Add GloVe or FastText embeddings
 * Build web form for testing job posts
 * ROC & PR-AUC visual dashboards
-* Deploy with FastAPI
 
 ---
 
